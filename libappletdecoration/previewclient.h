@@ -71,6 +71,7 @@ public:
     explicit PreviewClient(KDecoration2::DecoratedClient *client, KDecoration2::Decoration *decoration);
     virtual ~PreviewClient();
 
+    QString windowClass() const override;
     QString caption() const override;
     WId decorationId() const override;
     WId windowId() const override;

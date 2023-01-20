@@ -74,14 +74,14 @@ std::unique_ptr<KDecoration2::DecoratedClientPrivate> PreviewBridge::createClien
 {
     auto ptr = std::unique_ptr<PreviewClient>(new PreviewClient(client, decoration));
     m_lastCreatedClient = ptr.get();
-    return std::move(ptr);
+    return ptr;
 }
 
 std::unique_ptr<KDecoration2::DecorationSettingsPrivate> PreviewBridge::settings(KDecoration2::DecorationSettings *parent)
 {
     auto ptr = std::unique_ptr<PreviewSettings>(new PreviewSettings(parent));
     m_lastCreatedSettings = ptr.get();
-    return std::move(ptr);
+    return ptr;
 }
 
 void PreviewBridge::registerButton(PreviewButtonItem *button)
@@ -135,9 +135,13 @@ void PreviewBridge::createFactory()
         return;
     }
 
-    const auto offers = KPluginTrader::self()->query(s_pluginName,
-                        s_pluginName,
-                        QStringLiteral("[X-KDE-PluginInfo-Name] == '%1'").arg(m_plugin));
+    auto filter = [this](const KPluginMetaData& x) -> bool
+    {
+        const auto name = x.value(QString("X-KDE-PluginInfo-Name"), QString(""));
+        return name == m_plugin;
+    };
+
+    const auto offers = KPluginMetaData::findPlugins(QStringLiteral("kwin/effects/configs/"), filter);
 
     if (offers.isEmpty()) {
         setValid(false);
@@ -145,8 +149,9 @@ void PreviewBridge::createFactory()
         return;
     }
 
-    KPluginLoader loader(offers.first().libraryPath());
-    m_factory = loader.factory();
+    QPluginLoader loader(offers.first().fileName());
+
+    m_factory = KPluginFactory::loadFactory(KPluginMetaData(loader)).plugin;
     qDebug() << "Factory: " << !m_factory.isNull();
     setValid(!m_factory.isNull());
     reconfigure();

@@ -123,6 +123,10 @@ PreviewClient::PreviewClient(KDecoration2::DecoratedClient *c, KDecoration2::Dec
 
 PreviewClient::~PreviewClient() = default;
 
+QString PreviewClient::windowClass() const {
+    return "window-buttons";
+}
+
 void PreviewClient::setIcon(const QIcon &pixmap)
 {
     m_icon = pixmap;
@@ -411,7 +415,7 @@ void PreviewClient::requestShowWindowMenu()
     emit showWindowMenuRequested();
 }
 #else
-void PreviewClient::requestShowWindowMenu(const QRect &rect)
+void PreviewClient::requestShowWindowMenu([[maybe_unused]]const QRect &rect)
 {
     emit showWindowMenuRequested();
 }
